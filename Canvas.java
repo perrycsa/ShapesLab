@@ -95,9 +95,9 @@ public class Canvas {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     // If Ctrl-S is pressed...
-                    if ((e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                        System.out.println("YO!");
-                        
+                    if ((e.getKeyCode() == KeyEvent.VK_S) && 
+                    ((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK)) {
+
                         // Ask the user for a filename to save to.
                         JFileChooser fc = new JFileChooser();
                         FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -130,7 +130,7 @@ public class Canvas {
 
                         try {
                             saveToFile(file);
-                            
+
                             // Inform the user of success in saving.
                             JOptionPane.showMessageDialog(frame,
                                 "Image saved to: " + file, "File Saved",

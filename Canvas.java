@@ -26,7 +26,7 @@ import javax.swing.JOptionPane;
  * a modification of the general purpose Canvas, specially made for the BlueJ
  * "shapes" example.
  *
- * @author: Bruce Quig Michael Kölling Brian Dahlem
+ * @author: Bruce Quig Michael KÃ¶lling Brian Dahlem
  * @version 2018.11.26
  */
 public class Canvas {

@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -7,19 +6,13 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 
 /**
  * Canvas is a class to allow for simple graphical drawing on a canvas. This is
@@ -53,8 +46,6 @@ public class Canvas {
     //  ----- instance part -----
     private int width;
     private int height;
-    private JFrame frame;
-    private CanvasPane canvas;
     private BufferStrategy bs;
     private Color backgroundColor;
     private Image canvasImage;
@@ -76,74 +67,10 @@ public class Canvas {
         this.title = title;
         this.width = width;
         this.height = height;
-        frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        canvas = new CanvasPane();
-        frame.add(canvas);
-        frame.setTitle(title);
-        frame.setLocation(30, 30);
+        this.backgroundColor = bgColor;
 
-        canvas.setPreferredSize(new Dimension(width, height));
-
-        backgroundColor = bgColor;
-        frame.pack();
         shapes = new LinkedHashMap<>(1000);
-
-        // Listen for Ctrl-S to save the picture
-        frame.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    // If Ctrl-S is pressed...
-                    if ((e.getKeyCode() == KeyEvent.VK_S) && 
-                    ((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK)) {
-
-                        // Ask the user for a filename to save to.
-                        JFileChooser fc = new JFileChooser();
-                        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                                "PNG Images", "png");
-                        fc.setFileFilter(filter);
-                        int returnVal = fc.showSaveDialog(frame);
-
-                        // Cancel if the user pressed "Cancel"...
-                        if (returnVal == JFileChooser.CANCEL_OPTION) {
-                            return;
-                        }
-
-                        // Get the name of the file the user entered
-                        File file = fc.getSelectedFile();
-                        String fname = file.getAbsolutePath();
-                        if (!fname.endsWith(".png")) {
-                            file = new File(fname + ".png");
-                        }
-
-                        // If that file exists, confirm overwrite.
-                        if (file.exists()) {
-                            int overwrite = JOptionPane.showConfirmDialog(frame,
-                                    "A file named " + file + " exists.\nOverwrite?", "File Exists",
-                                    JOptionPane.YES_NO_OPTION);
-
-                            if (overwrite == JOptionPane.NO_OPTION) {
-                                return;
-                            }
-                        }
-
-                        try {
-                            saveToFile(file);
-
-                            // Inform the user of success in saving.
-                            JOptionPane.showMessageDialog(frame,
-                                "Image saved to: " + file, "File Saved",
-                                JOptionPane.INFORMATION_MESSAGE);
-                        } catch (java.io.IOException exc) {
-                            // Alert the user if there is an error.
-                            JOptionPane.showMessageDialog(frame,
-                                "Could not save image to: " + file, "File Error",
-                                JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-                }
-            });
     }
 
     /**
@@ -155,38 +82,21 @@ public class Canvas {
      * canvas (true or false)
      */
     public void setVisible(boolean visible) {
-        if (!firstShown && visible) {
-            firstShown = true;
-            // first time: instantiate the image and fill it with
-            // the background color
-
-            Dimension size = canvas.getSize();
-
-            canvas.createBufferStrategy(2);
-            bs = canvas.getBufferStrategy();
-
-            Graphics graphic = bs.getDrawGraphics();
-            graphic.setColor(backgroundColor);
-            graphic.fillRect(0, 0, size.width, size.height);
-            graphic.setColor(Color.black);
-            graphic.dispose();
-            bs.show();
-        }
-        frame.setVisible(visible);
+        return; // do nothing in headless mode
     }
 
     /**
      * Determine the width of the canvas
      */
     public int getWidth() {
-        return canvas.getWidth();
+        return width;
     }
 
     /**
      * Determine the height of the canvas
      */
     public int getHeight() {
-        return canvas.getHeight();
+        return height;
     }
 
     /**
@@ -251,7 +161,6 @@ public class Canvas {
      */
     public void setTitle(String title) {
         this.title = title;
-        frame.setTitle(title);
     }
 
     /**
@@ -291,12 +200,7 @@ public class Canvas {
      * Redraw all shapes currently on the Canvas.
      */
     public void redraw() {
-        Graphics buffer = bs.getDrawGraphics();
-
-        redraw(buffer);
-
-        buffer.dispose();
-        bs.show();
+        return; // do nothing in headless mode
     }
 
     /**
@@ -305,18 +209,11 @@ public class Canvas {
     private void redraw(Graphics buffer) {
         synchronized (shapes) {
             buffer.setColor(backgroundColor);
-            Dimension size = canvas.getSize();
-            buffer.fillRect(0, 0, size.width, size.height);
+            buffer.fillRect(0, 0, this.width, this.height);
 
             shapes.forEach((i, shape) -> {
                     shape.draw(buffer);
                 });
-
-            /*
-            for(Shape k : shapes) {
-            shape.draw(buffer);
-            }             
-             */
         }
     }
 
@@ -324,13 +221,7 @@ public class Canvas {
      * Erase the whole canvas. (Does not repaint.)
      */
     private void erase() {
-        Graphics buffer = bs.getDrawGraphics();
-        buffer.setColor(backgroundColor);
-        Dimension size = canvas.getSize();
-        buffer.fillRect(0, 0, size.width, size.height);
-
-        buffer.dispose();
-        bs.show();
+        return; // do nothing in headless mode
     }
 
     /**
@@ -389,13 +280,17 @@ public class Canvas {
 
         }
 
-        FontMetrics fm = canvas.getFontMetrics(font);
+        BufferedImage buffer = new BufferedImage(1,1,
+            BufferedImage.TYPE_INT_RGB);
+        Graphics bgc = buffer.getGraphics();
+
+        FontMetrics fm = bgc.getFontMetrics(font);
         int fontheight = fm.getHeight();
 
         // Create a buffered image from the picture
-        BufferedImage buffer = new BufferedImage(width, height + fontheight + 2,
+        buffer = new BufferedImage(width, height + fontheight + 2,
                 BufferedImage.TYPE_INT_RGB);
-        Graphics bgc = buffer.createGraphics();
+        bgc = buffer.createGraphics();
         bgc.setColor(Color.white);
         bgc.fillRect(0, 0, width, height + fontheight + 2);
 
@@ -403,22 +298,10 @@ public class Canvas {
 
         bgc.setColor(Color.black);
         bgc.setFont(font);
-        bgc.drawString(frame.getTitle(), 0, height + fm.getAscent() + 1);
+        bgc.drawString(this.title, 0, height + fm.getAscent() + 1);
 
         // Save the image
         ImageIO.write(buffer, "png", file);
-    }
-
-    /**
-     * **********************************************************************
-     * Inner class CanvasPane - the actual canvas component contained in the
-     * Canvas frame.
-     */
-    private class CanvasPane extends java.awt.Canvas {
-        @Override
-        public void paint(Graphics g) {
-            redraw();
-        }
     }
 
     /**

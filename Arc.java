@@ -1,7 +1,6 @@
 import java.awt.Graphics;
 import java.awt.Color;
 
-
 /**
  * An arc that can be manipulated and that draws itself on a canvas.
  * 

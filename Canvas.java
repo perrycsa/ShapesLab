@@ -92,84 +92,58 @@ public class Canvas {
 
         // Listen for Ctrl-S to save the picture
         frame.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                // If Ctrl-S is pressed...
-                if ((e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                    // Ask the user for a filename to save to.
-                    JFileChooser fc = new JFileChooser();
-                    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                            "PNG Images", "png");
-                    fc.setFileFilter(filter);
-                    int returnVal = fc.showSaveDialog(frame);
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    // If Ctrl-S is pressed...
+                    if ((e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                        System.out.println("YO!");
+                        
+                        // Ask the user for a filename to save to.
+                        JFileChooser fc = new JFileChooser();
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                                "PNG Images", "png");
+                        fc.setFileFilter(filter);
+                        int returnVal = fc.showSaveDialog(frame);
 
-                    // Cancel if the user pressed "Cancel"...
-                    if (returnVal == JFileChooser.CANCEL_OPTION) {
-                        return;
-                    }
-
-                    // Get the name of the file the user entered
-                    File file = fc.getSelectedFile();
-                    String fname = file.getAbsolutePath();
-
-                    if (!fname.endsWith(".png")) {
-                        file = new File(fname + ".png");
-                    }
-
-                    // If that file exists, confirm overwrite.
-                    if (file.exists()) {
-                        int overwrite = JOptionPane.showConfirmDialog(frame,
-                                "A file named " + file + " exists.\nOverwrite?", "File Exists",
-                                JOptionPane.YES_NO_OPTION);
-
-                        if (overwrite == JOptionPane.NO_OPTION) {
+                        // Cancel if the user pressed "Cancel"...
+                        if (returnVal == JFileChooser.CANCEL_OPTION) {
                             return;
                         }
-                    }
 
-                    Font font = new Font("SansSerif", Font.PLAIN, 20);
+                        // Get the name of the file the user entered
+                        File file = fc.getSelectedFile();
+                        String fname = file.getAbsolutePath();
+                        if (!fname.endsWith(".png")) {
+                            file = new File(fname + ".png");
+                        }
 
-                    try {
-                        InputStream fnt_stream = getClass().getResourceAsStream("Caveat.ttf");
-                        Font myFont = Font.createFont(Font.TRUETYPE_FONT, fnt_stream);
-                        font = myFont.deriveFont(Font.BOLD, 20f);
-                    } catch (FontFormatException | IOException ex) {
+                        // If that file exists, confirm overwrite.
+                        if (file.exists()) {
+                            int overwrite = JOptionPane.showConfirmDialog(frame,
+                                    "A file named " + file + " exists.\nOverwrite?", "File Exists",
+                                    JOptionPane.YES_NO_OPTION);
 
-                    }
+                            if (overwrite == JOptionPane.NO_OPTION) {
+                                return;
+                            }
+                        }
 
-                    FontMetrics fm = canvas.getFontMetrics(font);
-                    int fontheight = fm.getHeight();
-
-                    // Create a buffered image from the picture
-                    BufferedImage buffer = new BufferedImage(width, height + fontheight + 2,
-                            BufferedImage.TYPE_INT_RGB);
-                    Graphics bgc = buffer.createGraphics();
-                    bgc.setColor(Color.white);
-                    bgc.fillRect(0, 0, width, height + fontheight + 2);
-
-                    redraw(bgc);
-
-                    bgc.setColor(Color.black);
-                    bgc.setFont(font);
-                    bgc.drawString(frame.getTitle(), 0, height + fm.getAscent() + 1);
-
-                    // Save the image
-                    try {
-                        ImageIO.write(buffer, "png", file);
-
-                        // Inform the user of success in saving.
-                        JOptionPane.showMessageDialog(frame,
+                        try {
+                            saveToFile(file);
+                            
+                            // Inform the user of success in saving.
+                            JOptionPane.showMessageDialog(frame,
                                 "Image saved to: " + file, "File Saved",
                                 JOptionPane.INFORMATION_MESSAGE);
-                    } catch (java.io.IOException exc) {
-                        // Alert the user if there is an error.
-                        JOptionPane.showMessageDialog(frame,
+                        } catch (java.io.IOException exc) {
+                            // Alert the user if there is an error.
+                            JOptionPane.showMessageDialog(frame,
                                 "Could not save image to: " + file, "File Error",
                                 JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 }
-            }
-        });
+            });
     }
 
     /**
@@ -335,14 +309,14 @@ public class Canvas {
             buffer.fillRect(0, 0, size.width, size.height);
 
             shapes.forEach((i, shape) -> {
-                shape.draw(buffer);
-            });
-            
+                    shape.draw(buffer);
+                });
+
             /*
             for(Shape k : shapes) {
-                shape.draw(buffer);
+            shape.draw(buffer);
             }             
-            */
+             */
         }
     }
 
@@ -395,6 +369,44 @@ public class Canvas {
         }
 
         return c;
+    }
+
+    /**
+     * Save the current canvas to the file
+     * 
+     * @param file the File object to save to.
+     * 
+     * @return true if the file saved correctly, false if the save failed.
+     */
+    public void saveToFile(File file) throws IOException {
+        Font font = new Font("SansSerif", Font.PLAIN, 20);
+
+        try {
+            InputStream fnt_stream = getClass().getResourceAsStream("Caveat.ttf");
+            Font myFont = Font.createFont(Font.TRUETYPE_FONT, fnt_stream);
+            font = myFont.deriveFont(Font.BOLD, 20f);
+        } catch (FontFormatException | IOException ex) {
+
+        }
+
+        FontMetrics fm = canvas.getFontMetrics(font);
+        int fontheight = fm.getHeight();
+
+        // Create a buffered image from the picture
+        BufferedImage buffer = new BufferedImage(width, height + fontheight + 2,
+                BufferedImage.TYPE_INT_RGB);
+        Graphics bgc = buffer.createGraphics();
+        bgc.setColor(Color.white);
+        bgc.fillRect(0, 0, width, height + fontheight + 2);
+
+        redraw(bgc);
+
+        bgc.setColor(Color.black);
+        bgc.setFont(font);
+        bgc.drawString(frame.getTitle(), 0, height + fm.getAscent() + 1);
+
+        // Save the image
+        ImageIO.write(buffer, "png", file);
     }
 
     /**

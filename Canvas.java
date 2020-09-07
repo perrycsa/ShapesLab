@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -7,19 +6,13 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.JFileChooser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 
 /**
  * Canvas is a class to allow for simple graphical drawing on a canvas. This is
@@ -287,7 +280,8 @@ public class Canvas {
 
         }
 
-        BufferedImage buffer = new BufferedImage(0,0,BufferedImage.TYPE_INT_RGB);
+        BufferedImage buffer = new BufferedImage(1,1,
+            BufferedImage.TYPE_INT_RGB);
         Graphics bgc = buffer.getGraphics();
 
         FontMetrics fm = bgc.getFontMetrics(font);
